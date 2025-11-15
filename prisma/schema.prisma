@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Component {
+  id          String   @id @default(uuid())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  readings    Reading[]
+  alerts      Alert[]
+
+  @@map("components")
+}
+
+model Reading {
+  id          String   @id @default(uuid())
+  componentId String
+  data        Json
+  recordedAt  DateTime @default(now())
+
+  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
+  @@index([componentId])
+  @@map("readings")
+}
+
+model Alert {
+  id          String   @id @default(uuid())
+  componentId String
+  condition   String?
+  message     String
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  component   Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
+  @@index([componentId])
+  @@map("alerts")
+}
